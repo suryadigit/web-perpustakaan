@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from './client/supabaseClient.js';
 import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -11,6 +13,7 @@ function Dashboard() {
   const [image, setImage] = useState(null);
   const [editItem, setEditItem] = useState(null);
   const [error, setError] = useState('');
+  const [loadingAdd, setLoadingAdd] = useState(false); // State untuk loading tombol "Tambah"
   const navigate = useNavigate();
 
   const fetchData = useCallback(async () => {
@@ -43,9 +46,11 @@ function Dashboard() {
 
   const handleCreate = async () => {
     setError('');
+    setLoadingAdd(true); // Set loading tombol "Tambah" true
 
     if (itemName.trim() === '' || !image) {
       setError('Nama item dan gambar harus diisi');
+      setLoadingAdd(false); // Set loading tombol "Tambah" false
       return;
     }
 
@@ -56,12 +61,14 @@ function Dashboard() {
     if (uploadError) {
       console.error('Gagal mengunggah gambar:', uploadError);
       setError(uploadError.message);
+      setLoadingAdd(false); // Set loading tombol "Tambah" false
       return;
     }
 
     const imagePath = imageData?.path || imageData?.Key;
     if (!imagePath) {
       setError('Jalur gambar tidak ditemukan');
+      setLoadingAdd(false); // Set loading tombol "Tambah" false
       return;
     }
 
@@ -72,6 +79,7 @@ function Dashboard() {
     if (urlError) {
       console.error('Gagal mendapatkan URL publik:', urlError);
       setError(urlError.message);
+      setLoadingAdd(false); // Set loading tombol "Tambah" false
       return;
     }
 
@@ -81,6 +89,8 @@ function Dashboard() {
       .from('storage')
       .insert([{ name: itemName, user_id: userId, image_url: publicURL }])
       .select();
+
+    setLoadingAdd(false); // Set loading tombol "Tambah" false
 
     if (error) {
       console.error('Gagal menambahkan item:', error);
@@ -99,11 +109,6 @@ function Dashboard() {
 
   const handleUpdate = async () => {
     setError('');
-    if (!editItem) {
-      setError('Item yang akan diperbarui belum dipilih');
-      return;
-    }
-
     const { data: updatedItem, error } = await supabase
       .from('storage')
       .update({ name: itemName })
@@ -125,7 +130,12 @@ function Dashboard() {
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus item ini?')) {
+      return; // Jika tidak dikonfirmasi, keluar dari fungsi
+    }
+
     const { error } = await supabase.from('storage').delete().eq('id', id).eq('user_id', userId);
+
     if (error) setError(error.message);
     else {
       setData((prevData) => prevData.filter((item) => item.id !== id));
@@ -163,8 +173,8 @@ function Dashboard() {
               onChange={(e) => setImage(e.target.files[0])}
               className="input"
             />
-            <button onClick={editItem ? handleUpdate : handleCreate} className="button">
-              {editItem ? 'Perbarui' : 'Tambah'}
+            <button onClick={editItem ? handleUpdate : handleCreate} className="button" disabled={loadingAdd}>
+              {loadingAdd ? <FontAwesomeIcon icon={faSpinner} spin /> : (editItem ? 'Perbarui' : 'Tambah')}
             </button>
             {editItem && (
               <button onClick={() => { setEditItem(null); setItemName(''); setImage(null); }} className="cancel-button">
@@ -198,6 +208,7 @@ function Dashboard() {
                     >
                       Hapus
                     </button>
+
                   </div>
                 </li>
               ))}
