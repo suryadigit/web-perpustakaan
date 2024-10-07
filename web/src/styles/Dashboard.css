@@ -72,7 +72,6 @@ body {
 .list-item {
     display: flex;
     align-items: center;
-    /* Centering content vertically */
     margin: 10px 0;
     padding: 15px;
     background-color: #f9f9f9;
@@ -84,12 +83,9 @@ body {
 .list-item img {
     border-radius: 5px;
     margin-right: 15px;
-    /* Space between image and text */
     width: 60px;
-    /* Set a consistent image size */
     height: 60px;
     object-fit: cover;
-    /* Ensures image is not distorted */
 }
 
 .item-details {
