@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from './client/supabaseClient.js';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faThumbsUp, faThumbsDown, faUserCircle, faSignOutAlt, faCalendar, faPlus } from '@fortawesome/free-solid-svg-icons';
 import './styles/Dashboard.css';
 
 function Dashboard() {
@@ -10,24 +10,27 @@ function Dashboard() {
   const [session, setSession] = useState(null);
   const [userId, setUserId] = useState(null);
   const [itemName, setItemName] = useState('');
+  const [itemDescription, setItemDescription] = useState('');
   const [image, setImage] = useState(null);
-  const [editItem, setEditItem] = useState(null);
-  const [error, setError] = useState('');
-  const [loadingAdd, setLoadingAdd] = useState(false); 
+  const [formState, setFormState] = useState({ loading: false, error: '', successMessage: '' });
+  const [showDialog, setShowDialog] = useState(false);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);  
   const navigate = useNavigate();
 
   const fetchData = useCallback(async () => {
     if (!userId) return;
+
     const { data: responseData, error } = await supabase
       .from('storage')
       .select('*')
-      .eq('user_id', userId);
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error mengambil data:', error);
+      console.error('Error fetching data:', error);
+      setFormState(prev => ({ ...prev, error: 'Gagal mengambil data.' }));
     } else {
-      console.log('Data berhasil diambil:', responseData);
-      setData(responseData);
+      const shuffledData = responseData.sort(() => Math.random() - 0.5);
+      setData(shuffledData);
     }
   }, [userId]);
 
@@ -37,20 +40,18 @@ function Dashboard() {
       setUserId(session?.user?.id || null);
     });
 
-    if (userId) fetchData();
+    fetchData();
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [userId, fetchData]);
+  }, [fetchData]);
 
   const handleCreate = async () => {
-    setError('');
-    setLoadingAdd(true);  
+    setFormState({ loading: true, error: '', successMessage: '' });
 
-    if (itemName.trim() === '' || !image) {
-      setError('Nama item dan gambar harus diisi');
-      setLoadingAdd(false); 
+    if (!itemName.trim() || !itemDescription.trim() || !image) {
+      setFormState({ loading: false, error: 'Judul, deskripsi, dan gambar harus diisi' });
       return;
     }
 
@@ -59,166 +60,200 @@ function Dashboard() {
       .upload(`images/${userId}/${Date.now()}_${image.name}`, image);
 
     if (uploadError) {
-      console.error('Gagal mengunggah gambar:', uploadError);
-      setError(uploadError.message);
-      setLoadingAdd(false); 
+      setFormState({ loading: false, error: uploadError.message });
       return;
     }
 
     const imagePath = imageData?.path || imageData?.Key;
-    if (!imagePath) {
-      setError('Jalur gambar tidak ditemukan');
-      setLoadingAdd(false);  
-      return;
-    }
-
-    const { data: urlData, error: urlError } = supabase.storage
+    const { data: urlData } = await supabase.storage
       .from('storage_dev')
       .getPublicUrl(imagePath);
 
-    if (urlError) {
-      console.error('Gagal mendapatkan URL publik:', urlError);
-      setError(urlError.message);
-      setLoadingAdd(false);  
-      return;
-    }
-
-    const publicURL = urlData.publicUrl;
-
-    const { data: newItem, error } = await supabase
+    const { data: newItem, error: insertError } = await supabase
       .from('storage')
-      .insert([{ name: itemName, user_id: userId, image_url: publicURL }])
+      .insert([{
+        name: itemName,
+        description: itemDescription,
+        user_id: userId,
+        image_url: urlData.publicUrl,
+        user_email: session.user.email,
+        likes: 0,
+        isLiked: false
+      }])
       .select();
 
-    setLoadingAdd(false);  
+    setFormState({ loading: false, error: '', successMessage: insertError ? insertError.message : 'Postingan berhasil ditambahkan!' });
 
-    if (error) {
-      console.error('Gagal menambahkan item:', error);
-      setError(error.message);
-    } else if (newItem) {
-      setData((prevData) => [...prevData, newItem[0]]);
-      setItemName('');
-      setImage(null);
-
-      const inputFile = document.querySelector('input[type="file"]');
-      if (inputFile) {
-        inputFile.value = '';
-      }
+    if (!insertError) {
+      setData(prevData => [{ ...newItem[0] }, ...prevData]);
+      resetForm();
     }
   };
 
-  const handleUpdate = async () => {
-    setError('');
-    const { data: updatedItem, error } = await supabase
-      .from('storage')
-      .update({ name: itemName })
-      .eq('id', editItem.id)
-      .eq('user_id', userId)
-      .select();
-
-    if (error) {
-      console.error('Gagal memperbarui item:', error);
-      setError(error.message);
-    } else if (updatedItem) {
-      setData((prevData) =>
-        prevData.map((item) => (item.id === editItem.id ? updatedItem[0] : item))
-      );
-      setEditItem(null);
-      setItemName('');
-      setImage(null);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus item ini?')) {
-      return;  
-    }
-
-    const { error } = await supabase.from('storage').delete().eq('id', id).eq('user_id', userId);
-
-    if (error) setError(error.message);
-    else {
-      setData((prevData) => prevData.filter((item) => item.id !== id));
-    }
+  const resetForm = () => {
+    setItemName('');
+    setItemDescription('');
+    setImage(null);
+    setShowDialog(false);
+    document.querySelector('input[type="file"]').value = '';
   };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) console.error('Gagal keluar:', error);
-    else {
+    if (error) {
+      console.error('Gagal keluar:', error);
+    } else {
       setUserId(null);
       setSession(null);
       navigate('/');
     }
   };
 
+
+  const handleLike = async (itemId, currentIsLiked) => {
+    if (!userId) return;
+
+    let likeCountChange = currentIsLiked ? -1 : 1;
+
+    const likeAction = currentIsLiked ? supabase.from('likes').delete() : supabase.from('likes').insert([{ user_id: userId, item_id: itemId }]);
+
+    const { error: likeError } = await likeAction.eq('item_id', itemId).eq('user_id', userId);
+
+    if (likeError) {
+      console.error('Error liking item:', likeError);
+      return;
+    }
+
+    const { error: updateLikeError } = await supabase
+      .from('storage')
+      .update({ likes: supabase.raw(`likes + ${likeCountChange}`) })
+      .eq('id', itemId);
+
+    if (updateLikeError) {
+      console.error('Error updating like count:', updateLikeError);
+    } else {
+      setData(prevData =>
+        prevData.map(item =>
+          item.id === itemId
+            ? { ...item, likes: item.likes + likeCountChange, isLiked: !currentIsLiked }
+            : item
+        )
+      );
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', options);
+  };
+
+  const renderItems = () => {
+    return data.length > 0 ? (
+      <ul className="item-list">
+        {data.map((item) => (
+          <li key={item.id} className="list-item">
+            <img src={item.image_url} alt={item.name} className="item-image" />
+            <div className="item-details">
+              <h3>
+                {item.user_email}
+                <FontAwesomeIcon icon={faUserCircle} className="user-icon" />  
+              </h3>
+              <h3>
+                {formatDate(item.created_at)}
+                <FontAwesomeIcon icon={faCalendar} className="date-icon" />
+              </h3>
+              <span>{item.name}</span>
+              <p>{item.description}</p>
+              <button onClick={() => handleLike(item.id, item.isLiked)} className="like-button">
+                <FontAwesomeIcon icon={item.isLiked ? faThumbsDown : faThumbsUp} />
+                <span> ({item.likes})</span>
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>Tidak ada item untuk ditampilkan.</p>
+    );
+  };
+
+
   return (
     <div className="dashboard-container">
-      <h1 className="dashboard-title">Web Perpustakaan</h1>
+      <h2 className="dashboard-title">StoryiinAja</h2>
       {session ? (
-        <div>
-          <h2>Hai, {session.user.email}</h2>
-          <button onClick={handleLogout} className="button">Keluar</button>
-          <div className="form">
-            <input
-              type="text"
-              placeholder="Nama item"
-              value={itemName}
-              onChange={(e) => setItemName(e.target.value)}
-              className="input"
+        <div className="dashboard-content">
+          <div className="item-list-container">
+            {renderItems()}
+          </div>
+
+            <div className="avatar-container">
+              <FontAwesomeIcon
+                icon={faUserCircle}
+                className="avatar-icon"
+                onClick={() => setShowProfileDialog(true)}
+              />
+          <div className="new-post-container">
+            <FontAwesomeIcon
+              icon={faPlus}
+              className="button"
+              onClick={() => setShowDialog(true)}
             />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImage(e.target.files[0])}
-              className="input"
-            />
-            <button onClick={editItem ? handleUpdate : handleCreate} className="button" disabled={loadingAdd}>
-              {loadingAdd ? <FontAwesomeIcon icon={faSpinner} spin /> : (editItem ? 'Perbarui' : 'Tambah')}
-            </button>
-            {editItem && (
-              <button onClick={() => { setEditItem(null); setItemName(''); setImage(null); }} className="cancel-button">
-                Batal
-              </button>
+            </div>
+            <div className="avatar-container">
+              <FontAwesomeIcon
+                icon={faSignOutAlt}
+                className="avatar-icon"
+                onClick={() => handleLogout(true)}  
+              />
+            </div>
+            {showDialog && (
+              <div className="dialog">
+                <div className="dialog-content">
+                  <h3>Tambah Postingan Baru</h3>
+                  <input
+                    type="text"
+                    placeholder="Nama item"
+                    value={itemName}
+                    onChange={(e) => setItemName(e.target.value)}
+                    className="input"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Deskripsi item"
+                    value={itemDescription}
+                    onChange={(e) => setItemDescription(e.target.value)}
+                    className="input"
+                  />
+                  <input
+                    type="file"
+                    accept="image/*, video/*"
+                    onChange={(e) => setImage(e.target.files[0])}
+                    className="input"
+                  />
+                  <button onClick={handleCreate} className="button" disabled={formState.loading}>
+                    {formState.loading ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Tambah'}
+                  </button>
+                  {formState.error && <p className="error-message">{formState.error}</p>}
+                  {formState.successMessage && <p className="success-message">{formState.successMessage}</p>}
+                  <button onClick={() => setShowDialog(false)} className="button">Tutup</button>
+                </div>
+              </div>
+            )}
+            {showProfileDialog && (
+              <div className="dialog">
+                <div className="dialog-content">
+                  <h3>Profile Pengguna</h3>
+                  <p>Email: {session?.user?.email}</p>
+                  <button onClick={() => setShowProfileDialog(false)} className="button">Tutup</button>
+                </div>
+              </div>
             )}
           </div>
-          {error && <p className="error-message">{error}</p>}
-          {data.length > 0 ? (
-            <ul className="item-list">
-              {data.map((item) => (
-                <li key={item.id} className="list-item">
-                  <img src={item.image_url} alt={item.name} className="item-image" />
-                  <div className="item-details">
-                    <span>{item.name}</span>
-                  </div>
-                  <div className="button-group">
-                    <button
-                      onClick={() => {
-                        setEditItem(item);
-                        setItemName(item.name);
-                        setImage(null);
-                      }}
-                      className="edit-button"
-                    >
-                      Ubah
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="delete-button"
-                    >
-                      Hapus
-                    </button>
-
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Data tidak tersedia</p>
-          )}
         </div>
       ) : (
-        <p>Silakan masuk untuk melihat data.</p>
+        <h2>Silakan masuk untuk melanjutkan.</h2>
       )}
     </div>
   );
