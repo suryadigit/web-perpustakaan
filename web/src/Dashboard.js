@@ -3,7 +3,7 @@ import { supabase } from './client/supabaseClient.js';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-import './Dashboard.css';
+import './styles/Dashboard.css';
 
 function Dashboard() {
   const [data, setData] = useState([]);
@@ -13,7 +13,7 @@ function Dashboard() {
   const [image, setImage] = useState(null);
   const [editItem, setEditItem] = useState(null);
   const [error, setError] = useState('');
-  const [loadingAdd, setLoadingAdd] = useState(false); // State untuk loading tombol "Tambah"
+  const [loadingAdd, setLoadingAdd] = useState(false); 
   const navigate = useNavigate();
 
   const fetchData = useCallback(async () => {
@@ -46,11 +46,11 @@ function Dashboard() {
 
   const handleCreate = async () => {
     setError('');
-    setLoadingAdd(true); // Set loading tombol "Tambah" true
+    setLoadingAdd(true);  
 
     if (itemName.trim() === '' || !image) {
       setError('Nama item dan gambar harus diisi');
-      setLoadingAdd(false); // Set loading tombol "Tambah" false
+      setLoadingAdd(false); 
       return;
     }
 
@@ -61,14 +61,14 @@ function Dashboard() {
     if (uploadError) {
       console.error('Gagal mengunggah gambar:', uploadError);
       setError(uploadError.message);
-      setLoadingAdd(false); // Set loading tombol "Tambah" false
+      setLoadingAdd(false); 
       return;
     }
 
     const imagePath = imageData?.path || imageData?.Key;
     if (!imagePath) {
       setError('Jalur gambar tidak ditemukan');
-      setLoadingAdd(false); // Set loading tombol "Tambah" false
+      setLoadingAdd(false);  
       return;
     }
 
@@ -79,7 +79,7 @@ function Dashboard() {
     if (urlError) {
       console.error('Gagal mendapatkan URL publik:', urlError);
       setError(urlError.message);
-      setLoadingAdd(false); // Set loading tombol "Tambah" false
+      setLoadingAdd(false);  
       return;
     }
 
@@ -90,7 +90,7 @@ function Dashboard() {
       .insert([{ name: itemName, user_id: userId, image_url: publicURL }])
       .select();
 
-    setLoadingAdd(false); // Set loading tombol "Tambah" false
+    setLoadingAdd(false);  
 
     if (error) {
       console.error('Gagal menambahkan item:', error);
@@ -131,7 +131,7 @@ function Dashboard() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Apakah Anda yakin ingin menghapus item ini?')) {
-      return; // Jika tidak dikonfirmasi, keluar dari fungsi
+      return;  
     }
 
     const { error } = await supabase.from('storage').delete().eq('id', id).eq('user_id', userId);

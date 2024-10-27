@@ -3,7 +3,7 @@ import { supabase } from './client/supabaseClient.js';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-import './Auth.css';
+import './styles/Auth.css';
 
 function Auth() {
     const [email, setEmail] = useState('');
