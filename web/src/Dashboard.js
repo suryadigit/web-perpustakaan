@@ -14,9 +14,10 @@ function Dashboard() {
   const [image, setImage] = useState(null);
   const [formState, setFormState] = useState({ loading: false, error: '', successMessage: '' });
   const [showDialog, setShowDialog] = useState(false);
-  const [showProfileDialog, setShowProfileDialog] = useState(false);  
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
   const navigate = useNavigate();
 
+  // Asynchronous function to fetch data from Supabase
   const fetchData = useCallback(async () => {
     if (!userId) return;
 
@@ -109,7 +110,6 @@ function Dashboard() {
     }
   };
 
-
   const handleLike = async (itemId, currentIsLiked) => {
     if (!userId) return;
 
@@ -134,9 +134,7 @@ function Dashboard() {
     } else {
       setData(prevData =>
         prevData.map(item =>
-          item.id === itemId
-            ? { ...item, likes: item.likes + likeCountChange, isLiked: !currentIsLiked }
-            : item
+          item.id === itemId ? { ...item, isLiked: !currentIsLiked, likes: item.likes + likeCountChange } : item
         )
       );
     }
@@ -174,7 +172,7 @@ function Dashboard() {
         ))}
       </ul>
     ) : (
-      <p>Tidak ada item untuk ditampilkan.</p>
+      <p>Ops Tidak ada item untuk ditampilkan.</p>
     );
   };
 
@@ -214,14 +212,14 @@ function Dashboard() {
                   <h3>Tambah Postingan Baru</h3>
                   <input
                     type="text"
-                    placeholder="Nama item"
+                    placeholder="Judul Postingan"
                     value={itemName}
                     onChange={(e) => setItemName(e.target.value)}
                     className="input"
                   />
                   <input
                     type="text"
-                    placeholder="Deskripsi item"
+                    placeholder="Deskripsi Postingan"
                     value={itemDescription}
                     onChange={(e) => setItemDescription(e.target.value)}
                     className="input"
