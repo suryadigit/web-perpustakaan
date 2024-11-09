@@ -9,31 +9,37 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #fafafa;
+    background-color: #f0f2f5;
     font-family: 'Roboto', sans-serif;
+    color: #2c2c2c;
 }
 
 .dashboard-container {
     width: 100%;
     max-width: 600px;
-    background-color: #fff;
-    border: 1px solid #dbdbdb;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
-    padding: 16px;
+    background-color: #ffffff;
+    border: none;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 24px;
     text-align: right;
+    transition: box-shadow 0.3s;
+}
+
+.dashboard-container:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
 }
 
 .new-post-container {
     margin: 20px 0;
     padding: 16px;
-    background-color: #f7f7f7;
-    border: 1px solid #dbdbdb;
-    border-radius: 4px;
+    background-color: #ffffff;
+    border-radius: 8px;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
 }
 
 .avatar-container {
@@ -49,15 +55,16 @@ body {
 }
 
 .avatar-icon {
-    font-size: 24px;
-    color: #0095f6;
+    font-size: 26px;
+    color: #3b82f6;
     margin: 8px;
     cursor: pointer;
 }
 
-.user-icon, .date-icon {
+.user-icon,
+.date-icon {
     margin-left: 8px;
-    color: #007bff;
+    color: #3b82f6;
     vertical-align: middle;
 }
 
@@ -65,23 +72,25 @@ body {
     margin-right: 10px;
     font-size: 16px;
     cursor: pointer;
-    background-color: #007bff;
+    background-color: #3b82f6;
+    color: white;
+    padding: 8px 16px;
     border: none;
-    border-radius: 4px;
-    transition: background-color 0.3s;
+    border-radius: 6px;
+    transition: background-color 0.3s, transform 0.2s;
 }
 
 .tambah-postingan:hover {
-    background-color: #0056b3;
+    background-color: #2563eb;
+    transform: scale(1.05);
 }
 
 .dashboard-title {
-    font-size: 1.5rem;
-    color: #262626;
+    font-size: 1.75rem;
+    color: #1e293b;
     text-align: center;
     padding: 16px 0;
     font-weight: bold;
-    border-bottom: 1px solid #dbdbdb;
 }
 
 .dashboard-content {
@@ -96,18 +105,21 @@ body {
 .create-post-container {
     flex: 1;
     padding: 16px;
-    border: 1px solid #dbdbdb;
-    background-color: #f9f9f9;
-    border-radius: 4px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
     margin-right: 10px;
+    transition: box-shadow 0.3s;
 }
 
 .item-list-container {
-    height: 400px;
+    height: 640px;
     overflow-y: auto;
-    border: 1px solid #dbdbdb;
-    border-radius: 4px;
+    border-radius: 8px;
     padding: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s;
 }
 
 .scrollable-list {
@@ -123,76 +135,79 @@ body {
 .list-item {
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid #dbdbdb;
+    border-bottom: 1px solid #f1f1f1;
     padding: 16px 0;
 }
 
 .item-image {
     width: 100%;
-    border-radius: 8px;
+    border-radius: 10px;
     object-fit: cover;
-    margin-bottom: 8px;
-}
-
-.item-details {
-    padding: 8px 0;
+    margin-bottom: 12px;
 }
 
 .item-details h3,
 .item-details span,
 .item-details p {
     margin: 0;
-    color: #262626;
+    color: #1e293b;
     font-size: 14px;
 }
 
 .item-details h3 {
     font-weight: bold;
-    color: #262626;
+    color: #1e293b;
 }
 
 .item-details p {
     font-size: 13px;
-    color: #8e8e8e;
+    color: #64748b;
     margin-top: 4px;
 }
 
 .input {
     width: 100%;
-    padding: 8px 10px;
+    padding: 12px;
     margin: 4px 0;
-    border: 1px solid #c9ced3;
-    border-radius: 4px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
     font-size: 14px;
+    background-color: #f8fafc;
+    transition: border-color 0.3s;
 }
 
 .input:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+    border-color: #3b82f6;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
     outline: none;
 }
 
 .button-group {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     padding-top: 10px;
 }
 
 .button {
-    background-color: #0095f6;
-    color: #fff;
-    padding: 4px;
-    margin: 8px;
+    background-color: #3b82f6;
+    color: #ffffff;
+    padding: 10px 16px;
     font-size: 14px;
     font-weight: bold;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.button:hover {
+    background-color: #2563eb;
+    transform: scale(1.05);
 }
 
 .cancel-button {
-    background-color: #efefef;
-    color: #262626;
+    background-color: #e2e8f0;
+    color: #1e293b;
 }
 
 .dialog {
@@ -201,8 +216,8 @@ body {
     align-items: center;
     justify-content: center;
     background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(93, 34, 255, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
     padding: 40px;
     z-index: 1000;
     position: fixed;
@@ -213,59 +228,120 @@ body {
     width: 400px;
 }
 
+.dialog {
+    animation: dialogFadeIn 0.3s ease-out;
+}
+
+@keyframes dialogFadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+.dialog-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    color: #3b82f6;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.dialog-close-btn:hover {
+    color: #2563eb;
+}
+
+.image-preview-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 10px 0;
+    overflow-y: auto;
+}
+
+.image-preview-container img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    object-fit: cover;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.image-preview-container img:hover {
+    transform: scale(1.05);
+}
+
 .error-message {
-    color: #ff0000;
+    color: #e63946;
     font-size: 12px;
     margin-top: 4px;
 }
 
 .image-scroll-container {
     display: flex;
-    overflow-x: auto; /* memungkinkan scroll horizontal */
+    overflow-x: auto;
     padding: 10px 0;
 }
 
 .image-scroll-container img {
-    width: 100px; /* atur lebar sesuai kebutuhan */
+    width: 100px;
     height: auto;
-    margin-right: 10px; /* jarak antar gambar */
+    margin-right: 10px;
+    border-radius: 8px;
+    transition: transform 0.3s;
+}
+
+.image-scroll-container img:hover {
+    transform: scale(1.05);
 }
 
 /* Media Query untuk Responsivitas di Mobile */
 @media (max-width: 600px) {
+
     .dashboard-container,
     .new-post-container,
     .create-post-container,
     .item-list-container {
-        padding: 10px; /* Mengurangi padding */
+        padding: 10px;
     }
 
     .item-details h3 {
-        font-size: 16px; /* Ukuran font judul yang lebih besar di mobile */
+        font-size: 16px;
     }
 
     .item-details p {
-        font-size: 12px; /* Ukuran font deskripsi yang lebih kecil */
+        font-size: 12px;
     }
 
     .button {
-        padding: 8px; /* Ukuran padding tombol yang lebih besar */
-        font-size: 12px; /* Ukuran font tombol yang lebih kecil */
+        transition: all 0.3s ease;
+        padding: 8px;
+        font-size: 12px;
     }
 
     .avatar-icon {
-        font-size: 20px; /* Ukuran ikon avatar lebih kecil */
+        font-size: 20px;
     }
 
     .dashboard-title {
-        font-size: 1.25rem; /* Ukuran font judul yang lebih kecil */
+        font-size: 1.25rem;
     }
 
     .image-scroll-container img {
-        width: 80px; /* Ukuran gambar lebih kecil di mobile */
+        width: 80px;
     }
 
     .input {
-        font-size: 12px; /* Ukuran font input yang lebih kecil */
+        font-size: 12px;
     }
 }
